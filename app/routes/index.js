@@ -5,12 +5,14 @@ const Router = require("express").Router();
 const authMiddleware = require("../middlewares/auth");
 const authRoutes = require("./auth.routes");
 const userRoutes = require("./user.routes");
+const business_dash = require("./business_dash.routes");
 
 
 
 // BIND ROUTES FROM DFFRENT FILE
 Router.use("/auth/", authRoutes);
 Router.use("/user", authMiddleware, userRoutes);
+Router.use("/buisness-dash", authMiddleware, business_dash);
 
 
 module.exports = Router;

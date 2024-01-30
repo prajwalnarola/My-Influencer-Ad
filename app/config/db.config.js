@@ -17,13 +17,19 @@ db.sequelize = sequelize;
 db.user = require("../models/user.model")(sequelize, Sequelize);
 db.deviceToken = require("../models/device_token.model")(sequelize, Sequelize);
 db.jobs = require("../models/jobs.model")(sequelize, Sequelize);
+db.advertising_platform = require("../models/advertising_platform.model")(sequelize, Sequelize);
+db.industry = require("../models/industry.model")(sequelize, Sequelize);
 
 // has RELATIONS (HasMany / HasOne)
 db.user.hasOne(db.deviceToken, { as: "devicetoken", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 db.user.hasMany(db.jobs, { as: "jobs", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.jobs.hasMany(db.advertising_platform, { as: "adevertising_platform", foreignKey: "job_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.jobs.hasMany(db.industry, { as: "industry", foreignKey: "job_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 
 // belongsTO RELATION (BelongsTo / BelongsToMany)(foreign-key)
 db.deviceToken.belongsTo(db.user, { as: "user", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 db.jobs.belongsTo(db.user, { as: "user", foreignKey: "user_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.advertising_platform.belongsTo(db.jobs, { as: "jobs", foreignKey: "job_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
+db.industry.belongsTo(db.jobs, { as: "jobs", foreignKey: "job_id", targetKey: "id", onDelete: "CASCADE", onUpdate: "NO ACTION" });
 
 module.exports = db
