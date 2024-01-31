@@ -6,10 +6,10 @@ const controller = require("../controllers/business_dash.controller");
 const validator = require("../utils/validator");
 
 // DEFINED DIFFRENT ROUTES AND AS MIDDLWARE WE PASSED VALIDATIONS
-Router.post('/create-post', [], controller.createPost);
-// Router.post('/update', [], controller.updateProfile);
-// Router.post('/change-password', [validator.validateChangePassword], controller.changePassword);
-// Router.post('/delete-account', [], controller.deleteAccount);
-// Router.post('/logout', [], controller.logout);
+Router.get('/get-platforms', [], controller.getPlatforms);
+Router.get('/get-industries', [], controller.getIndustries);
+Router.post('/create-post', [validator.validatePost], controller.createPost);
+Router.get('/getDetails', [], controller.getAllDetails);
+Router.get('/get-jobs', [], controller.getJobs);
 
 module.exports = Router;

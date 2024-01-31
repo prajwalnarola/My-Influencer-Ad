@@ -14,6 +14,12 @@ module.exports = (sequelize, Sequelize) => {
                     notEmpty: true,
                 },
             },
+            headline: {
+                type: Sequelize.STRING,
+                validate: {
+                    notEmpty: true,
+                },
+            },
             description: {
                 type: Sequelize.STRING,
                 validate: {
@@ -65,7 +71,7 @@ module.exports = (sequelize, Sequelize) => {
             job_status: {
                 type: Sequelize.BOOLEAN,
                 defaultValue: "0",
-                comment: "0 = reject, 1 = hire",
+                comment: "0 = inactive, 1 = active",
             },
             is_delete: {
                 type: Sequelize.BOOLEAN,

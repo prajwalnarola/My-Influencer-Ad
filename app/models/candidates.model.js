@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
-    const Advertising_platform = sequelize.define(
-        "advertising_platform",
+    const Candidates = sequelize.define(
+        "candidates",
         {
             job_id: {
                 type: Sequelize.INTEGER,
@@ -8,11 +8,33 @@ module.exports = (sequelize, Sequelize) => {
                     notEmpty: true
                 },
             },
-            platform_id: {
+            user_id: {
+                type: Sequelize.INTEGER,
+                validate: {
+                    notEmpty: true
+                },
+            },
+            bid_amount: {
                 type: Sequelize.INTEGER,
                 validate: {
                     notEmpty: true,
                 },
+            },
+            cover_letter: {
+                type: Sequelize.STRING,
+                validate: {
+                    notEmpty: true,
+                },
+            },
+            is_shortlisted: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: "0",
+                comment: "0 = reject, 1 = shortlisted",
+            },
+            is_hired: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: "0",
+                comment: "0 = reject, 1 = hired",
             },
             is_delete: {
                 type: Sequelize.BOOLEAN,
@@ -28,5 +50,5 @@ module.exports = (sequelize, Sequelize) => {
         { freezeTableName: true, timestamps: true, createdAt: "created_at", updatedAt: "updated_at" },
     );
 
-    return Advertising_platform;
+    return Candidates;
 };

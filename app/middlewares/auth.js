@@ -18,6 +18,7 @@ module.exports = async function (req, res, next) {
         return res.status(responseStatus.UNAUTHORIZEDREQUEST).send({ message: err.message });
       }
 
+      // const login_user = (await user_cont.findUser(decoded?.email))?.data[0];
       const login_user = (await user_cont.findUser(decoded?.email))?.data[0];
 
       if (login_user?.uuid == decoded?.uuid) {

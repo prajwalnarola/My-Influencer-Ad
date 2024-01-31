@@ -8,8 +8,8 @@ module.exports = (sequelize, Sequelize) => {
                     notEmpty: true
                 },
             },
-            industry: {
-                type: Sequelize.STRING,
+            industry_id: {
+                type: Sequelize.INTEGER,
                 validate: {
                     notEmpty: true,
                 },

@@ -33,7 +33,7 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.ENUM,
         values: [
           "Influencer",
-          "Buisness",
+          "Business",
         ],
       },
       password: {
