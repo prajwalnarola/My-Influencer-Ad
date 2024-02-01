@@ -3,6 +3,8 @@ const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const JWTFunctions = require("../Helpers/JWTFunctions");
+const Sequelize = require("sequelize");
+
 
 const db = require("../config/db.config"); // models path
 const { user, jobs, advertising_platform, industry, candidates, available_platforms, available_industries } = db;
@@ -317,7 +319,7 @@ exports.getJobs = async (req, res) => {
             where: { profession_type: 'Business', is_delete: 0 },
             attributes: ['name'],
             required: false,
-          }, 
+          },
           {
             model: candidates,
             as: "candidates",
@@ -326,16 +328,78 @@ exports.getJobs = async (req, res) => {
               exclude: ["created_at", "updated_at", "is_testdata", "is_delete"]
             },
             required: false,
+            include: [
+              {
+                model: user,
+                as: "user",
+                where: { profession_type: 'Influencer', is_delete: 0 },
+                attributes: {
+                  exclude: ["updated_at", "is_testdata", "is_delete"]
+                },
+                required: false,
+              },
+            ]
           }
         ],
         group: ['jobs.id', 'candidates.id']
       });
 
-      const responseData = {
-        jobs: totalActiveJobsData
-      }
+      const responseData = await Promise.all(totalActiveJobsData.map(async (data) => {
 
-      res.status(responseCode.OK).send(responseObj.successObject("Data available", responseData));
+        const platformData = await advertising_platform.findAll({
+          where: { job_id: data.id, is_delete: 0 },
+          attributes: ["id"],
+          include: [
+            {
+              model: available_platforms,
+              as: "available_platforms",
+              where: { is_delete: 0 },
+              attributes: ['id','platform'],
+              required: false,
+            },
+          ],
+          group: ['advertising_platform.id']
+        });
+
+        const industryData = await industry.findAll({
+          where: { job_id: data.id, is_delete: 0 },
+          attributes: ["id"],
+          include: [
+            {
+              model: available_industries,
+              as: "available_industries",
+              where: { is_delete: 0 },
+              attributes: ['id','industry'],
+              required: false,
+            },
+          ],
+          group: ['industry.id']
+        });
+
+        return {
+          id: data.id,
+          user_id: data.user_id,
+          image: data.image,
+          headline: data.headline,
+          description: data.description,
+          website: data.website,
+          platform_data: platformData,
+          industry_data: industryData,
+          minimum_followers: data.minimum_followers,
+          due_date: data.due_date,
+          open_to_applicants: data.open_to_applicants,
+          age_range: data.age_range,
+          role: data.role,
+          budget: data.budget,
+          job_status: data.job_status,
+          created_date: data.created_at,
+          created_by: data.user,
+          candidates: data.candidates,
+        };
+
+      }));
+
+      res.status(responseCode.OK).send(responseObj.successObject("Success", responseData));
 
     } else {
       res.status(responseCode.BADREQUEST).send(responseObj.failObject("Something went wrong!"));

@@ -8,6 +8,6 @@ const validator = require("../utils/validator");
 // DEFINED DIFFRENT ROUTES AND AS MIDDLWARE WE PASSED VALIDATIONS
 Router.get('/getDetails', [], controller.getAllDetails);
 Router.post('/apply-jobs', [validator.validateApplyJobs], controller.applyJobs);
-// Router.get('/get_jobs', [], controller.getJobs);
+Router.get('/get_jobs', [], controller.getJobs);
 
 module.exports = Router;

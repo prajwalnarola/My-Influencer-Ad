@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const JWTFunctions = require("../Helpers/JWTFunctions");
 
 const db = require("../config/db.config"); // models path
-const { user, jobs, advertising_platform, industry, candidates } = db;
+const { user, jobs, advertising_platform, industry, candidates, available_platforms, available_industries } = db;
 
 const userControl = require("./user.controller");
 const uploadFile = require("../utils/uploadFile");
@@ -142,72 +142,134 @@ exports.applyJobs = async (req, res) => {
 };
 
 
-// exports.getJobs = async (req, res) => {
-//   try {
-//     // if (!req.body) {
-//     //   res.status(responseCode.BADREQUEST).send(responseObj.failObject("Content cannot be empty!"))
-//     //   return;
-//     // }
+exports.getJobs = async (req, res) => {
+  try {
+    // if (!req.body) {
+    //   res.status(responseCode.BADREQUEST).send(responseObj.failObject("Content cannot be empty!"))
+    //   return;
+    // }
 
-//     // console.log(req.decoded);
-//     if (!req.decoded) {
-//       res.status(responseCode.UNAUTHORIZEDREQUEST).send(responseObj.failObject("You are unauthorized to access this api! Please check the authorization token."));
-//       return;
-//     }
+    // console.log(req.decoded);
+    if (!req.decoded) {
+      res.status(responseCode.UNAUTHORIZEDREQUEST).send(responseObj.failObject("You are unauthorized to access this api! Please check the authorization token."));
+      return;
+    }
 
-//     var errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       res.status(responseCode.BADREQUEST).send(responseObj.failObject(errors?.errors[0]?.msg));
-//       return;
-//     }
+    var errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(responseCode.BADREQUEST).send(responseObj.failObject(errors?.errors[0]?.msg));
+      return;
+    }
 
-//     const decoded = req?.decoded;
+    const decoded = req?.decoded;
 
-//     const data = await user.findAll({
-//       where: { id: decoded?.id, profession_type: 'Business', is_delete: 0 },
-//     })
+    const data = await user.findAll({
+      where: { id: decoded?.id, profession_type: 'Influencer', is_delete: 0 },
+    })
 
-//     if (data?.length > 0) {
+    if (data?.length > 0) {
 
-//       const totalActiveJobsData = await jobs.findAll({
-//         where: { job_status: 1, is_delete: 0 },
-//         order: [
-//           ['id', 'DESC'],
-//         ],
-//         attributes: {
-//           exclude: ["updated_at", "is_testdata", "is_delete"]
-//         },
-//         include: [
-//           {
-//             model: user,
-//             as: "user",
-//             where: { profession_type: 'Business', is_delete: 0 },
-//             attributes: ['name'],
-//             required: false,
-//           },
-//           {
-//             model: candidates,
-//             as: "candidates",
-//             where: { is_delete: 0 },
-//             attributes: {
-//               exclude: ["created_at", "updated_at", "is_testdata", "is_delete"]
-//             },
-//             required: false,
-//           }
-//         ],
-//         group: ['jobs.id', 'candidates.id']
-//       });
+      const totalActiveJobsData = await jobs.findAll({
+        where: { job_status: 1, is_delete: 0 },
+        order: [
+          ['id', 'DESC'],
+        ],
+        attributes: {
+          exclude: ["updated_at", "is_testdata", "is_delete"]
+        },
+        include: [
+          {
+            model: user,
+            as: "user",
+            where: { profession_type: 'Business', is_delete: 0 },
+            attributes: ['name'],
+            required: false,
+          },
+          {
+            model: candidates,
+            as: "candidates",
+            where: { is_delete: 0 },
+            attributes: {
+              exclude: ["created_at", "updated_at", "is_testdata", "is_delete"]
+            },
+            required: false,
+            include: [
+              {
+                model: user,
+                as: "user",
+                where: { profession_type: 'Influencer', is_delete: 0 },
+                attributes: {
+                  exclude: ["updated_at", "is_testdata", "is_delete"]
+                },
+                required: false,
+              },
+            ]
+          }
+        ],
+        group: ['jobs.id', 'candidates.id']
+      });
 
-//       const responseData = {
-//         jobs: totalActiveJobsData
-//       }
+      const responseData = await Promise.all(totalActiveJobsData.map(async (data) => {
 
-//       res.status(responseCode.OK).send(responseObj.successObject("Data available", responseData));
+        const platformData = await advertising_platform.findAll({
+          where: { job_id: data.id, is_delete: 0 },
+          attributes: ["id"],
+          include: [
+            {
+              model: available_platforms,
+              as: "available_platforms",
+              where: { is_delete: 0 },
+              attributes: ['id','platform'],
+              required: false,
+            },
+          ],
+          group: ['advertising_platform.id']
+        });
 
-//     } else {
-//       res.status(responseCode.BADREQUEST).send(responseObj.failObject("Something went wrong!"));
-//     }
-//   } catch (err) {
-//     res.status(responseCode.BADREQUEST).send(responseObj.failObject(err?.message, err));
-//   }
-// }
+        const industryData = await industry.findAll({
+          where: { job_id: data.id, is_delete: 0 },
+          attributes: ["id"],
+          include: [
+            {
+              model: available_industries,
+              as: "available_industries",
+              where: { is_delete: 0 },
+              attributes: ['id','industry'],
+              required: false,
+            },
+          ],
+          group: ['industry.id']
+        });
+
+        return {
+          id: data.id,
+          user_id: data.user_id,
+          image: data.image,
+          headline: data.headline,
+          description: data.description,
+          website: data.website,
+          platform_data: platformData,
+          industry_data: industryData,
+          minimum_followers: data.minimum_followers,
+          due_date: data.due_date,
+          open_to_applicants: data.open_to_applicants,
+          age_range: data.age_range,
+          role: data.role,
+          budget: data.budget,
+          job_status: data.job_status,
+          created_date: data.created_at,
+          created_by: data.user,
+          candidates: data.candidates,
+        };
+
+      }));
+
+      res.status(responseCode.OK).send(responseObj.successObject("Success", responseData));
+
+    } else {
+      res.status(responseCode.BADREQUEST).send(responseObj.failObject("Something went wrong!"));
+    }
+  } catch (err) {
+    res.status(responseCode.BADREQUEST).send(responseObj.failObject(err?.message, err));
+  }
+}
