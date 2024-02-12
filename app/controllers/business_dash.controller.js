@@ -334,7 +334,7 @@ exports.getJobs = async (req, res) => {
                 as: "user",
                 where: { profession_type: 'Influencer', is_delete: 0 },
                 attributes: {
-                  exclude: ["updated_at", "is_testdata", "is_delete"]
+                  exclude: ["password", "uuid", "updated_at", "is_testdata", "is_delete"]
                 },
                 required: false,
               },
@@ -369,7 +369,7 @@ exports.getJobs = async (req, res) => {
               model: available_industries,
               as: "available_industries",
               where: { is_delete: 0 },
-              attributes: ['id','industry'],
+              attributes: ['id','indutry'],
               required: false,
             },
           ],
