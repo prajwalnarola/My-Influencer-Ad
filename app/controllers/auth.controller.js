@@ -48,51 +48,56 @@ exports.register = async (req, res) => {
     }
 
     const user_email = await userControl.findUser(req.body.email);
-    if (user_email.status === 1) {
-      throw { message: "That email address is already registered." };
+    const user_phone_number = await userControl.findUserByPhoneNumber(req.body.phone_number);
+    if (user_phone_number.status == 1) {
+      throw { message: "That phone number is already registered." };
     } else {
-      const create_user = {
-        name: req.body.name,
-        email: req.body.email,
-        phone_number : req.body. phone_number,
-        profession_type: req.body.profession_type,
-        password: req.body.password,
-      };
-
-      const data = await user.create(create_user);
-      if (data) {
-        const mailResp = await userControl.sendVerificationMail({
-          to: data?.email,
-          subject: "Verify Email",
-          verify_link:
-            "http://localhost:" +
-            // process.env.PORT +
-            "3000" +
-            // process.env.BASE_URL +
-            "/auth/verify-email/" +
-            data?.uuid,
-          user_name: data?.name,
-          email: data?.email,
-        });
-        if (mailResp.status == 0) {
-          throw {
-            message: "Error occured while sending mail",
-            error: mailResp.error,
-          };
-        } else {
-          res
-            .status(responseCode.OK)
-            .send(
-              responseObj.successObject(
-                "Registered successfully!, Check email and verify the link."
-              )
-            );
-        }
+      if (user_email.status === 1) {
+        throw { message: "That email address is already registered." };
       } else {
-        throw {
-          status: responseCode.INTERNALSERVER_ERROR,
-          message: "Something went wrong!",
+        const create_user = {
+          name: req.body.name,
+          email: req.body.email,
+          phone_number: req.body.phone_number,
+          profession_type: req.body.profession_type,
+          password: req.body.password,
         };
+
+        const data = await user.create(create_user);
+        if (data) {
+          const mailResp = await userControl.sendVerificationMail({
+            to: data?.email,
+            subject: "Verify Email",
+            verify_link:
+              "http://localhost:" +
+              // process.env.PORT +
+              "3000" +
+              // process.env.BASE_URL +
+              "/auth/verify-email/" +
+              data?.uuid,
+            user_name: data?.name,
+            email: data?.email,
+          });
+          if (mailResp.status == 0) {
+            throw {
+              message: "Error occured while sending mail",
+              error: mailResp.error,
+            };
+          } else {
+            res
+              .status(responseCode.OK)
+              .send(
+                responseObj.successObject(
+                  "Registered successfully!, Check email and verify the link."
+                )
+              );
+          }
+        } else {
+          throw {
+            status: responseCode.INTERNALSERVER_ERROR,
+            message: "Something went wrong!",
+          };
+        }
       }
     }
   } catch (err) {

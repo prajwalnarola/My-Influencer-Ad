@@ -14,7 +14,7 @@ Router.post('/shortlisting-status', [], controller.updateShortlistingStatus);
 Router.post('/hiring-status', [], controller.updateHiringStatus);
 Router.get('/filter-by-role', [], controller.filterByRole);
 Router.get('/filter-by-location', [], controller.filterByLocation);
-
-
+Router.get('/filter-my-job-by-role', [], controller.filterMyJobByRole);
+Router.get('/filter-my-job-by-location', [], controller.filterMyJobByLocation);
 
 module.exports = Router;

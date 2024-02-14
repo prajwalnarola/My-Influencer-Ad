@@ -98,16 +98,33 @@ exports.applyJobs = async (req, res) => {
       };
 
       const jobData = await jobs.findAll({
-        where: {job_status: 1, is_delete: 0},
-      })
+        where: {id: requestdUserData.job_id ,job_status: 1, is_delete: 0},
+      });
 
-      if(jobData[0].budget >= req.body?.bid_amount){ 
+      const candidateData = await candidates.findAll({
+        where: {user_id: decoded?.id, job_id: req.body?.job_id, is_delete: 0},
+      });
+
+      if(candidateData.length == 0){
+
+        if(jobData.length > 0){
+
+          if(jobData[0].budget >= req.body?.bid_amount){ 
         
-        await candidates.create(requestdUserData);
-        res.status(responseCode.OK).send(responseObj.successObject("Data has been inserted!"));
+            await candidates.create(requestdUserData);
+            
+            res.status(responseCode.OK).send(responseObj.successObject("Data has been inserted!"));
+    
+          } else {
+            res.status(responseCode.BADREQUEST).send(responseObj.failObject("invalid bid amount"));
+          }
 
-      } else {
-        res.status(responseCode.BADREQUEST).send(responseObj.failObject("invalid bid amount"))
+        } else{
+          res.status(responseCode.BADREQUEST).send(responseObj.failObject("invalid job"));
+        }
+
+      }else {
+        res.status(responseCode.BADREQUEST).send(responseObj.failObject("User already applied"));
       }
       
     }

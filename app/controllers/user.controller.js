@@ -44,6 +44,35 @@ exports.findUser = (data) => {
   });
 };
 
+exports.findUserByPhoneNumber = (data) => {
+  return new Promise((resolve, reject) => {
+    user.findAll({
+      where: { phone_number: data, is_delete: 0 },
+      attributes: {
+        exclude: ["created_at", "updated_at", "is_testdata", "is_delete"]
+      }
+    }).then((result) => {
+      try {
+        if (result && result.length > 0) {
+          resolve({
+            status: 1,
+            message: "data found",
+            data: result,
+          });
+        } else {
+          // resolve(0);
+          resolve({ status: 2, message: "No data found" });
+        }
+      } catch (err) {
+        resolve({
+          status: 0,
+          message: "Error occurred while fetching User",
+        });
+      }
+    });
+  });
+};
+
 exports.findUserById = (data) => {
   return new Promise((resolve, reject) => {
     // user.findAll({ where: { id: data }, attributes: { exclude: ["created_at", "updated_at", "is_testdata", "is_delete"] } }).then((result) => {
